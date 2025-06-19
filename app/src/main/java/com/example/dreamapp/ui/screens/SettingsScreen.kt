@@ -1,11 +1,16 @@
 package com.example.dreamapp.ui.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import com.example.dreamapp.notifications.NotificationWorker
 import com.example.dreamapp.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -15,6 +20,7 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
     val hour by viewModel.notificationHour.collectAsState()
     val minute by viewModel.notificationMinute.collectAsState()
     var showTimePicker by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -52,6 +58,14 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                     }
                 }
             }
+
+            // Временная кнопка для теста уведомления
+            Button(
+                onClick = { sendTestNotification(context) },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text("Проверить уведомление")
+            }
         }
     }
 
@@ -66,6 +80,11 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
             onDismiss = { showTimePicker = false }
         )
     }
+}
+
+fun sendTestNotification(context: Context) {
+    val workRequest = OneTimeWorkRequestBuilder<NotificationWorker>().build()
+    WorkManager.getInstance(context).enqueue(workRequest)
 }
 
 @Composable
