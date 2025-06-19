@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.dreamapp.data.Dream
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +62,14 @@ fun StatisticsScreen(
             // Средняя продолжительность сна
             val averageDuration = if (dreams.isNotEmpty()) {
                 val totalMinutes = dreams.sumOf { dream ->
-                    val duration = Duration.between(dream.startTime, dream.endTime)
+                    val startDate = LocalDate.now()
+                    val startDateTime = LocalDateTime.of(startDate, dream.startTime)
+                    val endDateTime = if (dream.endTime.isAfter(dream.startTime) || dream.endTime == dream.startTime) {
+                        LocalDateTime.of(startDate, dream.endTime)
+                    } else {
+                        LocalDateTime.of(startDate.plusDays(1), dream.endTime)
+                    }
+                    val duration = Duration.between(startDateTime, endDateTime)
                     duration.toMinutes()
                 }
                 val averageMinutes = totalMinutes / dreams.size

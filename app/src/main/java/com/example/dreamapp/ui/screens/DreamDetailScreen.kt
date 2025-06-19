@@ -12,6 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.dreamapp.data.Dream
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +133,14 @@ fun DreamDetailScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            val duration = java.time.Duration.between(dream.startTime, dream.endTime)
+                            val startDate = LocalDate.now()
+                            val startDateTime = LocalDateTime.of(startDate, dream.startTime)
+                            val endDateTime = if (dream.endTime.isAfter(dream.startTime) || dream.endTime == dream.startTime) {
+                                LocalDateTime.of(startDate, dream.endTime)
+                            } else {
+                                LocalDateTime.of(startDate.plusDays(1), dream.endTime)
+                            }
+                            val duration = Duration.between(startDateTime, endDateTime)
                             val hours = duration.toHours()
                             val minutes = duration.toMinutesPart()
                             Text(
