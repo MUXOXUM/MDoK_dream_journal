@@ -15,6 +15,7 @@ import com.example.dreamapp.navigation.MainNavigation
 import com.example.dreamapp.ui.theme.DreamAppTheme
 import com.example.dreamapp.viewmodel.AuthViewModel
 import com.example.dreamapp.viewmodel.DreamViewModel
+import com.example.dreamapp.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
     private val dreamViewModel: DreamViewModel by viewModels { 
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
     }
     
     private val authViewModel: AuthViewModel by viewModels()
+    private val settingsViewModel: SettingsViewModel by viewModels()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +41,8 @@ class MainActivity : ComponentActivity() {
                         onSaveDream = { dream ->
                             dreamViewModel.addDream(dream)
                         },
-                        authViewModel = authViewModel
+                        authViewModel = authViewModel,
+                        settingsViewModel = settingsViewModel
                     )
                 }
             }

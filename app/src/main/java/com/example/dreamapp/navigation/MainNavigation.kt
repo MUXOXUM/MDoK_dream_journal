@@ -22,6 +22,7 @@ import com.example.dreamapp.data.Dream
 import com.example.dreamapp.ui.screens.*
 import com.example.dreamapp.viewmodel.AuthViewModel
 import com.example.dreamapp.viewmodel.AuthState
+import com.example.dreamapp.viewmodel.SettingsViewModel
 import com.google.firebase.auth.FirebaseUser
 
 sealed class MainScreen(val route: String, val title: String, val icon: @Composable () -> Unit) {
@@ -37,7 +38,8 @@ fun MainNavigation(
     navController: NavHostController = rememberNavController(),
     dreams: List<Dream>,
     onSaveDream: (Dream) -> Unit,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
     val authState by authViewModel.authState.collectAsState()
     val isLoading by authViewModel.isLoading.collectAsState()
@@ -116,7 +118,7 @@ fun MainNavigation(
             }
             
             composable(MainScreen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen(viewModel = settingsViewModel)
             }
         }
     }
