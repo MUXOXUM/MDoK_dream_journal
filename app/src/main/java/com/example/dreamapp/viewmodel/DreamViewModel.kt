@@ -1,62 +1,69 @@
 package com.example.dreamapp.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.dreamapp.data.Dream
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.example.dreamapp.data.DreamDatabase
+import com.example.dreamapp.data.DreamRepository
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
-class DreamViewModel : ViewModel() {
-    private val _dreams = MutableStateFlow<List<Dream>>(emptyList())
-    val dreams: StateFlow<List<Dream>> = _dreams.asStateFlow()
-    
-    private var nextId = 1L
-    
+class DreamViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository: DreamRepository
+    val dreams: StateFlow<List<Dream>>
+
     init {
-        // Добавим несколько тестовых записей для демонстрации
-        addSampleDreams()
+        val database = DreamDatabase.getDatabase(application)
+        val dreamDao = database.dreamDao()
+        repository = DreamRepository(dreamDao)
+        dreams = repository.allDreams.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+        
+        // Добавим тестовые данные только если база пустая
+        viewModelScope.launch {
+            if (repository.getDreamCount() == 0) {
+                addSampleDreams()
+            }
+        }
     }
     
     fun addDream(dream: Dream) {
         viewModelScope.launch {
-            val newDream = if (dream.id == 0L) {
-                dream.copy(id = nextId++)
-            } else {
-                dream
-            }
-            
-            val currentDreams = _dreams.value.toMutableList()
-            val existingIndex = currentDreams.indexOfFirst { it.id == newDream.id }
-            
-            if (existingIndex >= 0) {
-                currentDreams[existingIndex] = newDream
-            } else {
-                currentDreams.add(newDream)
-            }
-            
-            // Сортируем по дате (новые сверху)
-            currentDreams.sortByDescending { it.date }
-            
-            _dreams.value = currentDreams
+            repository.insertDream(dream)
         }
     }
     
-    fun deleteDream(dreamId: Long) {
+    fun updateDream(dream: Dream) {
         viewModelScope.launch {
-            val currentDreams = _dreams.value.toMutableList()
-            currentDreams.removeAll { it.id == dreamId }
-            _dreams.value = currentDreams
+            repository.updateDream(dream)
         }
     }
     
-    private fun addSampleDreams() {
+    fun deleteDream(dream: Dream) {
+        viewModelScope.launch {
+            repository.deleteDream(dream)
+        }
+    }
+    
+    fun deleteDreamById(id: Long) {
+        viewModelScope.launch {
+            repository.deleteDreamById(id)
+        }
+    }
+    
+    private suspend fun addSampleDreams() {
         val sampleDreams = listOf(
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(1),
                 startTime = LocalTime.of(23, 0),
                 endTime = LocalTime.of(7, 30),
@@ -66,7 +73,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = true
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(2),
                 startTime = LocalTime.of(22, 30),
                 endTime = LocalTime.of(6, 45),
@@ -76,7 +83,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = false
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(3),
                 startTime = LocalTime.of(0, 15),
                 endTime = LocalTime.of(8, 0),
@@ -86,7 +93,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = false
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(4),
                 startTime = LocalTime.of(23, 30),
                 endTime = LocalTime.of(6, 15),
@@ -96,7 +103,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = true
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(5),
                 startTime = LocalTime.of(22, 0),
                 endTime = LocalTime.of(7, 0),
@@ -106,7 +113,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = false
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(6),
                 startTime = LocalTime.of(1, 0),
                 endTime = LocalTime.of(8, 30),
@@ -116,7 +123,7 @@ class DreamViewModel : ViewModel() {
                 isLucid = true
             ),
             Dream(
-                id = nextId++,
+                id = 0,
                 date = LocalDate.now().minusDays(7),
                 startTime = LocalTime.of(0, 30),
                 endTime = LocalTime.of(6, 45),
@@ -127,6 +134,19 @@ class DreamViewModel : ViewModel() {
             )
         )
         
-        _dreams.value = sampleDreams
+        sampleDreams.forEach { dream ->
+            repository.insertDream(dream)
+        }
+    }
+
+    companion object {
+        fun provideFactory(application: Application): ViewModelProvider.Factory {
+            return object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                    return DreamViewModel(application) as T
+                }
+            }
+        }
     }
 } 

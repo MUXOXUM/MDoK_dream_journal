@@ -16,7 +16,9 @@ import com.example.dreamapp.ui.theme.DreamAppTheme
 import com.example.dreamapp.viewmodel.DreamViewModel
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: DreamViewModel by viewModels()
+    private val viewModel: DreamViewModel by viewModels { 
+        DreamViewModel.provideFactory(application) 
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
