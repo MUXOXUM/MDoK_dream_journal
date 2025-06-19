@@ -13,12 +13,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.example.dreamapp.navigation.MainNavigation
 import com.example.dreamapp.ui.theme.DreamAppTheme
+import com.example.dreamapp.viewmodel.AuthViewModel
 import com.example.dreamapp.viewmodel.DreamViewModel
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: DreamViewModel by viewModels { 
+    private val dreamViewModel: DreamViewModel by viewModels { 
         DreamViewModel.provideFactory(application) 
     }
+    
+    private val authViewModel: AuthViewModel by viewModels()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,13 +32,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val dreams by viewModel.dreams.collectAsState()
+                    val dreams by dreamViewModel.dreams.collectAsState()
                     
                     MainNavigation(
                         dreams = dreams,
                         onSaveDream = { dream ->
-                            viewModel.addDream(dream)
-                        }
+                            dreamViewModel.addDream(dream)
+                        },
+                        authViewModel = authViewModel
                     )
                 }
             }

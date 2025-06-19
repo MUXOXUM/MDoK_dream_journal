@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "255219042610",
+    "project_id": "dreamapp-eedbd",
+    "storage_bucket": "dreamapp-eedbd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255219042610:android:88f41ffa02258215986f2b",
+        "android_client_info": {
+          "package_name": "com.example.dreamapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvUGcm_fV1sRkuSvumleTtb_5g9hzmA6w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

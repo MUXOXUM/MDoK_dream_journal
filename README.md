@@ -49,3 +49,57 @@
 4) Кэширование информации в бд SQLite
 5) Работа с сетью  (с готовым сервисом или со своим сервером, Firebase)
 6) Соблюдать правила дизайна цифровых продуктов (https://m3.material.io/)
+
+---
+
+ ИНСТРУКЦИЯ ПО ПОДКЛЮЧЕНИЮ FIREBASE
+Шаг 1: Создание проекта Firebase
+Перейдите на Firebase Console
+Нажмите "Создать проект"
+Введите название проекта (например, "DreamApp")
+Отключите Google Analytics (опционально)
+Нажмите "Создать проект"
+Шаг 2: Добавление Android приложения
+В консоли Firebase нажмите на иконку Android
+Введите Package name: com.example.dreamapp
+Введите App nickname: "DreamApp"
+Нажмите "Зарегистрировать приложение"
+Шаг 3: Загрузка google-services.json
+Скачайте файл google-services.json
+Поместите его в папку app/ вашего проекта
+ВАЖНО: Не добавляйте этот файл в Git (он уже в .gitignore)
+Шаг 4: Настройка Authentication
+В консоли Firebase перейдите в "Authentication"
+Нажмите "Начать"
+Выберите "Email/Password"
+Включите "Email/Password" и "Email link (passwordless sign-in)"
+Нажмите "Сохранить"
+Шаг 5: Настройка Firestore
+В консоли Firebase перейдите в "Firestore Database"
+Нажмите "Создать базу данных"
+Выберите "Начать в тестовом режиме"
+Выберите ближайший регион (например, "europe-west3")
+Нажмите "Готово"
+Шаг 6: Настройка правил безопасности Firestore
+В консоли Firebase перейдите в "Firestore Database" → "Правила" и замените правила на:
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Пользователи могут читать и записывать только свои данные
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Сны пользователя
+      match /dreams/{dreamId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+```
+Шаг 7: Проверка подключения
+Синхронизируйте проект в Android Studio
+Запустите приложение
+Попробуйте зарегистрироваться с новым аккаунтом
+Проверьте, что данные сохраняются в Firestore

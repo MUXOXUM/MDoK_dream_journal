@@ -1,11 +1,16 @@
 package com.example.dreamapp.navigation
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -15,6 +20,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.dreamapp.data.Dream
 import com.example.dreamapp.ui.screens.*
+import com.example.dreamapp.viewmodel.AuthViewModel
+import com.example.dreamapp.viewmodel.AuthState
+import com.google.firebase.auth.FirebaseUser
 
 sealed class MainScreen(val route: String, val title: String, val icon: @Composable () -> Unit) {
     object Dreams : MainScreen("dreams", "Дневник", { Icon(Icons.Default.List, contentDescription = null) })
@@ -28,8 +36,13 @@ sealed class MainScreen(val route: String, val title: String, val icon: @Composa
 fun MainNavigation(
     navController: NavHostController = rememberNavController(),
     dreams: List<Dream>,
-    onSaveDream: (Dream) -> Unit
+    onSaveDream: (Dream) -> Unit,
+    authViewModel: AuthViewModel
 ) {
+    val authState by authViewModel.authState.collectAsState()
+    val isLoading by authViewModel.isLoading.collectAsState()
+    val errorMessage by authViewModel.errorMessage.collectAsState()
+
     val screens = listOf(
         MainScreen.Dreams,
         MainScreen.Statistics,
@@ -50,16 +63,10 @@ fun MainNavigation(
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
                             navController.navigate(screen.route) {
-                                // Pop up to the start destination of the graph to
-                                // avoid building up a large stack of destinations
-                                // on the back stack as users select items
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                 }
-                                // Avoid multiple copies of the same destination when
-                                // reselecting the same item
                                 launchSingleTop = true
-                                // Restore state when reselecting a previously selected item
                                 restoreState = true
                             }
                         }
@@ -85,12 +92,49 @@ fun MainNavigation(
             }
             
             composable(MainScreen.Auth.route) {
-                AuthScreen()
+                when (authState) {
+                    is AuthState.Authenticated -> {
+                        val user = (authState as AuthState.Authenticated).user
+                        AccountScreen(user = user, onSignOut = { authViewModel.signOut() })
+                    }
+                    else -> {
+                        AuthScreen(
+                            onSignIn = { email, password ->
+                                authViewModel.signIn(email, password)
+                            },
+                            onSignUp = { email, password, displayName ->
+                                authViewModel.signUp(email, password, displayName)
+                            },
+                            onResetPassword = { email ->
+                                authViewModel.resetPassword(email)
+                            },
+                            isLoading = isLoading,
+                            errorMessage = errorMessage
+                        )
+                    }
+                }
             }
             
             composable(MainScreen.Settings.route) {
                 SettingsScreen()
             }
+        }
+    }
+}
+
+@Composable
+fun AccountScreen(user: FirebaseUser, onSignOut: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Вы вошли как:", style = MaterialTheme.typography.titleMedium)
+        Text(user.email ?: user.displayName ?: "Без email", style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.padding(16.dp))
+        Button(onClick = onSignOut) {
+            Text("Выйти из аккаунта")
         }
     }
 } 

@@ -7,21 +7,26 @@ import androidx.lifecycle.viewModelScope
 import com.example.dreamapp.data.Dream
 import com.example.dreamapp.data.DreamDatabase
 import com.example.dreamapp.data.DreamRepository
+import com.example.dreamapp.data.FirestoreRepository
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 
 class DreamViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: DreamRepository
+    private val firestoreRepository: FirestoreRepository
     val dreams: StateFlow<List<Dream>>
 
     init {
         val database = DreamDatabase.getDatabase(application)
         val dreamDao = database.dreamDao()
         repository = DreamRepository(dreamDao)
+        firestoreRepository = FirestoreRepository()
+        
         dreams = repository.allDreams.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -38,25 +43,67 @@ class DreamViewModel(application: Application) : AndroidViewModel(application) {
     
     fun addDream(dream: Dream) {
         viewModelScope.launch {
-            repository.insertDream(dream)
+            // Сохраняем локально
+            val localId = repository.insertDream(dream)
+            
+            // Синхронизируем с облаком
+            try {
+                firestoreRepository.addDream(dream.copy(id = localId))
+            } catch (e: Exception) {
+                // Если облако недоступно, продолжаем работать локально
+            }
         }
     }
     
     fun updateDream(dream: Dream) {
         viewModelScope.launch {
+            // Обновляем локально
             repository.updateDream(dream)
+            
+            // Синхронизируем с облаком
+            try {
+                firestoreRepository.updateDream(dream)
+            } catch (e: Exception) {
+                // Если облако недоступно, продолжаем работать локально
+            }
         }
     }
     
     fun deleteDream(dream: Dream) {
         viewModelScope.launch {
+            // Удаляем локально
             repository.deleteDream(dream)
+            
+            // Синхронизируем с облаком
+            try {
+                firestoreRepository.deleteDream(dream.id)
+            } catch (e: Exception) {
+                // Если облако недоступно, продолжаем работать локально
+            }
         }
     }
     
     fun deleteDreamById(id: Long) {
         viewModelScope.launch {
             repository.deleteDreamById(id)
+            
+            // Синхронизируем с облаком
+            try {
+                firestoreRepository.deleteDream(id)
+            } catch (e: Exception) {
+                // Если облако недоступно, продолжаем работать локально
+            }
+        }
+    }
+
+    fun syncWithCloud() {
+        viewModelScope.launch {
+            try {
+                val localDreams = repository.allDreams.first()
+                firestoreRepository.syncDreamsToCloud(localDreams)
+            } catch (e: Exception) {
+                // Обработка ошибок синхронизации
+            }
         }
     }
     
