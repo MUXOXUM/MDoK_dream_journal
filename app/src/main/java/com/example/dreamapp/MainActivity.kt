@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
                         onSaveDream = { dream ->
                             dreamViewModel.addDream(dream)
                         },
+                        onDeleteDream = { dream ->
+                            dreamViewModel.deleteDream(dream)
+                        },
                         authViewModel = authViewModel,
                         settingsViewModel = settingsViewModel
                     )

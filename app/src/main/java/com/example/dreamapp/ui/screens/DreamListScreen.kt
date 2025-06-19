@@ -1,5 +1,6 @@
 package com.example.dreamapp.ui.screens
 
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,18 +10,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.dreamapp.data.Dream
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DreamListScreen(
     dreams: List<Dream>,
     onDreamClick: (Dream) -> Unit,
-    onAddDreamClick: () -> Unit
+    onAddDreamClick: () -> Unit,
+    onDeleteDream: (Dream) -> Unit
 ) {
+    var dreamToDelete by remember { mutableStateOf<Dream?>(null) }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -65,23 +71,50 @@ fun DreamListScreen(
                 items(dreams) { dream ->
                     DreamCard(
                         dream = dream,
-                        onClick = { onDreamClick(dream) }
+                        onClick = { onDreamClick(dream) },
+                        onLongClick = { dreamToDelete = dream }
                     )
                 }
             }
         }
     }
+
+    if (dreamToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { dreamToDelete = null },
+            title = { Text("Удалить запись?") },
+            text = { Text("Вы действительно хотите удалить этот сон?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    dreamToDelete?.let { onDeleteDream(it) }
+                    dreamToDelete = null
+                }) {
+                    Text("Удалить")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { dreamToDelete = null }) {
+                    Text("Отмена")
+                }
+            }
+        )
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DreamCard(
     dream: Dream,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
     ) {
         Column(
             modifier = Modifier

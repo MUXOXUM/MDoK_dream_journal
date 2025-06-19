@@ -38,6 +38,7 @@ fun MainNavigation(
     navController: NavHostController = rememberNavController(),
     dreams: List<Dream>,
     onSaveDream: (Dream) -> Unit,
+    onDeleteDream: (Dream) -> Unit,
     authViewModel: AuthViewModel,
     settingsViewModel: SettingsViewModel
 ) {
@@ -85,7 +86,10 @@ fun MainNavigation(
             composable(MainScreen.Dreams.route) {
                 DreamNavigation(
                     dreams = dreams,
-                    onSaveDream = onSaveDream
+                    onSaveDream = onSaveDream,
+                    onDeleteDream = { dream ->
+                        onDeleteDream(dream)
+                    }
                 )
             }
             

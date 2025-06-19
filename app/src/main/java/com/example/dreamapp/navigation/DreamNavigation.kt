@@ -26,7 +26,8 @@ sealed class Screen(val route: String) {
 fun DreamNavigation(
     navController: NavHostController = rememberNavController(),
     dreams: List<Dream>,
-    onSaveDream: (Dream) -> Unit
+    onSaveDream: (Dream) -> Unit,
+    onDeleteDream: (Dream) -> Unit
 ) {
     NavHost(
         navController = navController,
@@ -40,7 +41,8 @@ fun DreamNavigation(
                 },
                 onAddDreamClick = {
                     navController.navigate(Screen.DreamEdit.createRoute())
-                }
+                },
+                onDeleteDream = onDeleteDream
             )
         }
         
