@@ -21,11 +21,10 @@ import com.example.dreamapp.viewmodel.DreamViewModel
 import com.example.dreamapp.viewmodel.SettingsViewModel
 
 class MainActivity : ComponentActivity() {
-    private val dreamViewModel: DreamViewModel by viewModels { 
-        DreamViewModel.provideFactory(application) 
-    }
-    
     private val authViewModel: AuthViewModel by viewModels()
+    private val dreamViewModel: DreamViewModel by viewModels {
+        DreamViewModel.provideFactory(application, authViewModel)
+    }
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     private val requestPermissionLauncher =
