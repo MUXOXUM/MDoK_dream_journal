@@ -41,7 +41,7 @@ class DreamViewModel(
         // Добавим тестовые данные только если база пустая
         viewModelScope.launch {
             if (repository.getDreamCount() == 0) {
-                addSampleDreams()
+                // addSampleDreams() // Удалено: больше не добавляем тестовые записи
             }
         }
 
