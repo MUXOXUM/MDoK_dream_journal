@@ -43,7 +43,13 @@
 
 ## Демонстрация работы приложения
 
-<video src="showcase/Video.mp4" controls width="600"></video>
+![Описание скриншота](showcase/1.png)
+
+![Описание скриншота](showcase/2.png)
+
+![Описание скриншота](showcase/3.png)
+
+![Описание скриншота](showcase/4.png)
 
 ---
 
