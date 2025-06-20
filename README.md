@@ -43,13 +43,13 @@
 
 ## Демонстрация работы приложения
 
-<img src="showcase/2.png" alt="Описание" width="50%">
+<img src="showcase/1.png" alt="Описание" width="40%">
 
-![Описание скриншота](showcase/2.png)
+<img src="showcase/2.png" alt="Описание" width="40%">
 
-![Описание скриншота](showcase/3.png)
+<img src="showcase/3.png" alt="Описание" width="40%">
 
-![Описание скриншота](showcase/4.png)
+<img src="showcase/4.png" alt="Описание" width="40%">
 
 ---
 
